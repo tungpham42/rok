@@ -1,8 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { Calendar, Card, Tag, Spin, Alert, Typography, Row, Col } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Calendar,
+  Card,
+  Tag,
+  Spin,
+  Alert,
+  Typography,
+  Row,
+  Col,
+  Button,
+} from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
+import "dayjs/locale/vi"; // Import locale tiếng Việt
+import locale from "antd/es/calendar/locale/vi_VN"; // Import locale tiếng Việt cho Calendar
+
+// Thiết lập locale tiếng Việt cho dayjs
+dayjs.locale("vi");
 
 const { Title, Text } = Typography;
 
@@ -31,6 +46,8 @@ const EventCalendar: React.FC = () => {
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
+  const calendarRef = useRef<any>(null);
 
   useEffect(() => {
     fetchEvents();
@@ -70,7 +87,7 @@ const EventCalendar: React.FC = () => {
   const processEvents = (eventsData: Event[]) => {
     const allCalendarEvents: CalendarEvent[] = [];
     const today = dayjs();
-    const endDate = today.add(6, "year"); // Show events for next 6 years
+    const endDate = today.add(42, "year"); // Show events for next 42 years
 
     eventsData.forEach((event) => {
       event.pattern.forEach((pattern) => {
@@ -129,6 +146,79 @@ const EventCalendar: React.FC = () => {
   const getDateEvents = (date: Dayjs) => {
     const dateStr = date.format("YYYY-MM-DD");
     return calendarEvents.filter((event) => event.date === dateStr);
+  };
+
+  const goToToday = () => {
+    setCurrentDate(dayjs());
+    if (calendarRef.current) {
+      calendarRef.current.onSelect(dayjs());
+    }
+  };
+
+  // Custom header renderer để thêm nút "Hôm nay"
+  const customHeaderRender = ({
+    value,
+    onChange,
+  }: {
+    value: Dayjs;
+    onChange: (date: Dayjs) => void;
+  }) => {
+    const currentYear = value.year();
+    const currentMonth = value.month();
+
+    const monthOptions = [];
+    for (let i = 0; i < 12; i++) {
+      monthOptions.push(
+        <option key={i} value={i}>
+          {dayjs().month(i).format("MM")}
+        </option>
+      );
+    }
+
+    const yearOptions = [];
+    for (let i = currentYear - 10; i <= currentYear + 10; i++) {
+      yearOptions.push(
+        <option key={i} value={i}>
+          {i}
+        </option>
+      );
+    }
+
+    return (
+      <div
+        style={{
+          padding: 8,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Button size="small" onClick={goToToday}>
+          Hôm nay
+        </Button>
+        <div>
+          <select
+            value={currentMonth}
+            onChange={(e) => {
+              const newValue = value.month(parseInt(e.target.value, 10));
+              onChange(newValue);
+            }}
+            style={{ marginRight: 8 }}
+          >
+            {monthOptions}
+          </select>
+          <select
+            value={currentYear}
+            onChange={(e) => {
+              const newValue = value.year(parseInt(e.target.value, 10));
+              onChange(newValue);
+            }}
+          >
+            {yearOptions}
+          </select>
+        </div>
+      </div>
+    );
   };
 
   const dateCellRender = (value: Dayjs) => {
@@ -241,8 +331,13 @@ const EventCalendar: React.FC = () => {
               <CalendarOutlined /> Lịch Sự Kiện
             </Title>
             <Calendar
+              ref={calendarRef}
+              value={currentDate}
+              onChange={setCurrentDate}
               dateCellRender={dateCellRender}
               monthCellRender={monthCellRender}
+              locale={locale}
+              headerRender={customHeaderRender}
             />
           </Card>
         </Col>
@@ -260,7 +355,9 @@ const EventCalendar: React.FC = () => {
               .map((event, index) => (
                 <div key={index} className="upcoming-event-item">
                   <div className="event-date">
-                    <Text strong>{dayjs(event.date).format("DD/MM")}</Text>
+                    <Text strong>
+                      {dayjs(event.date).format("dddd, DD/MM/YYYY")}
+                    </Text>
                   </div>
                   <div className="event-info">
                     <Text strong style={{ color: event.event.color }}>
