@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, JSX } from "react";
 import {
   Calendar,
   Card,
@@ -161,7 +161,9 @@ const EventCalendar: React.FC = () => {
     return calendarEvents.filter((event) => event.date === dateStr);
   };
 
-  const getWeekEvents = (startDate: Dayjs) => {
+  const getWeekEvents = (
+    startDate: Dayjs
+  ): { [key: string]: CalendarEvent[] } => {
     const weekEvents: { [key: string]: CalendarEvent[] } = {};
 
     // Get all days of the week
@@ -206,7 +208,7 @@ const EventCalendar: React.FC = () => {
     const currentYear = value.year();
     const currentMonth = value.month();
 
-    const monthOptions = [];
+    const monthOptions: JSX.Element[] = [];
     for (let i = 0; i < 12; i++) {
       monthOptions.push(
         <Option key={i} value={i}>
@@ -215,7 +217,7 @@ const EventCalendar: React.FC = () => {
       );
     }
 
-    const yearOptions = [];
+    const yearOptions: JSX.Element[] = [];
     for (let i = currentYear - 10; i <= currentYear + 10; i++) {
       yearOptions.push(
         <Option key={i} value={i}>
@@ -392,7 +394,7 @@ const EventCalendar: React.FC = () => {
   const renderWeekView = () => {
     const startOfWeek = currentDate.startOf("week");
     const weekEvents = getWeekEvents(startOfWeek);
-    const daysOfWeek = [];
+    const daysOfWeek: Dayjs[] = [];
 
     for (let i = 0; i < 7; i++) {
       const day = startOfWeek.add(i, "day");
