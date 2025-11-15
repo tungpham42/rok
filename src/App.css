@@ -46,6 +46,10 @@
   margin: 1px 0;
 }
 
+.event-item > .ant-tag {
+  color: #000000 !important;
+}
+
 .month-events {
   margin-top: 5px;
 }
