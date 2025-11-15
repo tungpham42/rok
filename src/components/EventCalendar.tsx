@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   Card,
@@ -47,7 +47,6 @@ const EventCalendar: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
-  const calendarRef = useRef<any>(null);
 
   useEffect(() => {
     fetchEvents();
@@ -149,10 +148,8 @@ const EventCalendar: React.FC = () => {
   };
 
   const goToToday = () => {
-    setCurrentDate(dayjs());
-    if (calendarRef.current) {
-      calendarRef.current.onSelect(dayjs());
-    }
+    const today = dayjs();
+    setCurrentDate(today);
   };
 
   // Custom header renderer để thêm nút "Hôm nay"
@@ -170,7 +167,7 @@ const EventCalendar: React.FC = () => {
     for (let i = 0; i < 12; i++) {
       monthOptions.push(
         <option key={i} value={i}>
-          {dayjs().month(i).format("MM")}
+          {`Tháng ${i + 1}`}
         </option>
       );
     }
@@ -331,7 +328,6 @@ const EventCalendar: React.FC = () => {
               <CalendarOutlined /> Lịch Sự Kiện
             </Title>
             <Calendar
-              ref={calendarRef}
               value={currentDate}
               onChange={setCurrentDate}
               dateCellRender={dateCellRender}
