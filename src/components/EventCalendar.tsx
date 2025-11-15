@@ -35,7 +35,7 @@ const EventCalendar: React.FC = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, []); // eslint-disable-line
 
   const fetchEvents = async () => {
     try {
