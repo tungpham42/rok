@@ -233,7 +233,7 @@ const EventCalendar: React.FC = () => {
   return (
     <div className="event-calendar">
       <Row gutter={[16, 16]}>
-        <Col xs={24} lg={16}>
+        <Col xs={24} lg={24}>
           <Card>
             <Title level={3}>
               <CalendarOutlined /> Event Calendar
@@ -245,7 +245,7 @@ const EventCalendar: React.FC = () => {
           </Card>
         </Col>
 
-        <Col xs={24} lg={8}>
+        <Col xs={24} lg={12}>
           <Card title="Upcoming Events" className="upcoming-events">
             {calendarEvents
               .filter(
@@ -272,8 +272,10 @@ const EventCalendar: React.FC = () => {
                 </div>
               ))}
           </Card>
+        </Col>
 
-          <Card title="All Events" style={{ marginTop: 16 }}>
+        <Col xs={24} lg={12}>
+          <Card title="All Events">
             {events.map((event, index) => (
               <div key={index} className="event-summary">
                 <Tag color={event.color} style={{ marginBottom: 8 }}>
