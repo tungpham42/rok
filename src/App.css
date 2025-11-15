@@ -399,13 +399,13 @@ body {
   color: var(--text-light) !important;
 }
 
-/* .ant-select-item-option-selected {
+.ant-select-item-option-selected {
   background: rgba(102, 126, 234, 0.2) !important;
 }
 
 .ant-select-item-option-active {
   background: rgba(102, 126, 234, 0.1) !important;
-} */
+}
 
 /* Responsive design */
 @media (max-width: 768px) {
