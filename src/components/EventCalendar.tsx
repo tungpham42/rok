@@ -10,6 +10,7 @@ import {
   Col,
   Button,
   Select,
+  Radio,
 } from "antd";
 import {
   CalendarOutlined,
@@ -20,9 +21,13 @@ import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import "dayjs/locale/vi"; // Import locale tiếng Việt
 import locale from "antd/es/calendar/locale/vi_VN"; // Import locale tiếng Việt cho Calendar
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 
 // Thiết lập locale tiếng Việt cho dayjs
 dayjs.locale("vi");
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -47,12 +52,15 @@ interface CalendarEvent {
   isDuring: boolean;
 }
 
+type CalendarView = "month" | "week";
+
 const EventCalendar: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
+  const [calendarView, setCalendarView] = useState<CalendarView>("month");
 
   useEffect(() => {
     fetchEvents();
@@ -153,17 +161,38 @@ const EventCalendar: React.FC = () => {
     return calendarEvents.filter((event) => event.date === dateStr);
   };
 
+  const getWeekEvents = (startDate: Dayjs) => {
+    const weekEvents: { [key: string]: CalendarEvent[] } = {};
+
+    // Get all days of the week
+    for (let i = 0; i < 7; i++) {
+      const currentDay = startDate.add(i, "day");
+      const dateStr = currentDay.format("YYYY-MM-DD");
+      weekEvents[dateStr] = getDateEvents(currentDay);
+    }
+
+    return weekEvents;
+  };
+
   const goToToday = () => {
     const today = dayjs();
     setCurrentDate(today);
   };
 
-  const goToPreviousMonth = () => {
-    setCurrentDate(currentDate.subtract(1, "month"));
+  const goToPrevious = () => {
+    if (calendarView === "month") {
+      setCurrentDate(currentDate.subtract(1, "month"));
+    } else {
+      setCurrentDate(currentDate.subtract(1, "week"));
+    }
   };
 
-  const goToNextMonth = () => {
-    setCurrentDate(currentDate.add(1, "month"));
+  const goToNext = () => {
+    if (calendarView === "month") {
+      setCurrentDate(currentDate.add(1, "month"));
+    } else {
+      setCurrentDate(currentDate.add(1, "week"));
+    }
   };
 
   // Custom header renderer để thêm nút "Hôm nay", "Tháng trước", "Tháng sau"
@@ -223,25 +252,35 @@ const EventCalendar: React.FC = () => {
             <Button
               size="small"
               icon={<LeftOutlined />}
-              onClick={goToPreviousMonth}
+              onClick={goToPrevious}
               style={{
                 background: "var(--card-bg)",
-                border: "1px solid var(--border-glow)",
-                color: "var(--text-light)",
+                border: "1px solid var(--border-light)",
+                color: "var(--text-dark)",
               }}
             />
             <Button
               size="small"
               icon={<RightOutlined />}
-              onClick={goToNextMonth}
+              onClick={goToNext}
               style={{
                 background: "var(--card-bg)",
-                border: "1px solid var(--border-glow)",
-                color: "var(--text-light)",
+                border: "1px solid var(--border-light)",
+                color: "var(--text-dark)",
               }}
             />
           </div>
         </div>
+
+        <Radio.Group
+          value={calendarView}
+          onChange={(e) => setCalendarView(e.target.value)}
+          size="small"
+          style={{ marginLeft: "auto", marginRight: "16px" }}
+        >
+          <Radio.Button value="month">Tháng</Radio.Button>
+          <Radio.Button value="week">Tuần</Radio.Button>
+        </Radio.Group>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <Select
@@ -255,7 +294,7 @@ const EventCalendar: React.FC = () => {
             size="small"
             dropdownStyle={{
               background: "var(--card-bg)",
-              border: "1px solid var(--border-glow)",
+              border: "1px solid var(--border-light)",
             }}
           >
             {monthOptions}
@@ -271,7 +310,7 @@ const EventCalendar: React.FC = () => {
             size="small"
             dropdownStyle={{
               background: "var(--card-bg)",
-              border: "1px solid var(--border-glow)",
+              border: "1px solid var(--border-light)",
             }}
           >
             {yearOptions}
@@ -349,6 +388,129 @@ const EventCalendar: React.FC = () => {
     );
   };
 
+  // Render weekly view
+  const renderWeekView = () => {
+    const startOfWeek = currentDate.startOf("week");
+    const weekEvents = getWeekEvents(startOfWeek);
+    const daysOfWeek = [];
+
+    for (let i = 0; i < 7; i++) {
+      const day = startOfWeek.add(i, "day");
+      daysOfWeek.push(day);
+    }
+
+    return (
+      <div className="week-view">
+        <div
+          className="week-header"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "100px repeat(7, 1fr)",
+            gap: "8px",
+            marginBottom: "16px",
+            padding: "12px",
+            background: "var(--card-bg)",
+            borderRadius: "12px",
+            border: "1px solid var(--border-light)",
+          }}
+        >
+          <div style={{ fontWeight: "600", color: "var(--text-darker)" }}>
+            Giờ
+          </div>
+          {daysOfWeek.map((day, index) => (
+            <div key={index} style={{ textAlign: "center", fontWeight: "600" }}>
+              <div style={{ color: "var(--text-darker)", fontSize: "14px" }}>
+                {day.format("ddd")}
+              </div>
+              <div
+                style={{
+                  color: day.isSame(dayjs(), "day")
+                    ? "var(--accent-primary)"
+                    : "var(--text-dark)",
+                  fontSize: "18px",
+                  fontWeight: day.isSame(dayjs(), "day") ? "700" : "400",
+                }}
+              >
+                {day.format("DD")}
+              </div>
+              <div style={{ color: "var(--text-muted)", fontSize: "12px" }}>
+                {day.format("MM/YYYY")}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="week-body"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "100px repeat(7, 1fr)",
+            gap: "8px",
+          }}
+        >
+          {/* Time slots */}
+          {Array.from({ length: 14 }, (_, i) => i + 7).map((hour) => (
+            <React.Fragment key={hour}>
+              <div
+                style={{
+                  padding: "8px",
+                  textAlign: "right",
+                  color: "var(--text-muted)",
+                  fontSize: "12px",
+                  borderRight: "1px solid var(--border-light)",
+                }}
+              >
+                {hour}:00
+              </div>
+
+              {daysOfWeek.map((day, dayIndex) => {
+                const dateStr = day.format("YYYY-MM-DD");
+                const dayEvents = weekEvents[dateStr] || [];
+                const hourEvents = dayEvents.filter((event) => {
+                  const eventHour = dayjs(event.date).hour();
+                  return eventHour === hour;
+                });
+
+                return (
+                  <div
+                    key={dayIndex}
+                    style={{
+                      minHeight: "60px",
+                      padding: "4px",
+                      border: "1px solid var(--border-light)",
+                      borderRadius: "6px",
+                      background: "rgba(255, 255, 255, 0.5)",
+                    }}
+                  >
+                    {hourEvents.map((event, eventIndex) => (
+                      <Tag
+                        key={eventIndex}
+                        color={event.event.color}
+                        style={{
+                          margin: "1px",
+                          fontSize: "10px",
+                          border: event.isStart ? "2px solid #000" : "none",
+                          opacity: event.isDuring ? 0.7 : 1,
+                          display: "block",
+                          width: "100%",
+                          textOverflow: "ellipsis",
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {event.isStart ? "🎯" : "📅"} {event.event.title}
+                      </Tag>
+                    ))}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -390,14 +552,24 @@ const EventCalendar: React.FC = () => {
             <Title level={3}>
               <CalendarOutlined /> Lịch Sự Kiện
             </Title>
-            <Calendar
-              value={currentDate}
-              onChange={setCurrentDate}
-              dateCellRender={dateCellRender}
-              monthCellRender={monthCellRender}
-              locale={locale}
-              headerRender={customHeaderRender}
-            />
+            {calendarView === "month" ? (
+              <Calendar
+                value={currentDate}
+                onChange={setCurrentDate}
+                dateCellRender={dateCellRender}
+                monthCellRender={monthCellRender}
+                locale={locale}
+                headerRender={customHeaderRender}
+              />
+            ) : (
+              <>
+                {customHeaderRender({
+                  value: currentDate,
+                  onChange: setCurrentDate,
+                })}
+                {renderWeekView()}
+              </>
+            )}
           </Card>
         </Col>
 
