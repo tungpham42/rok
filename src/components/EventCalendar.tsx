@@ -9,6 +9,7 @@ import {
   Row,
   Col,
   Button,
+  Select,
 } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
@@ -20,6 +21,7 @@ import locale from "antd/es/calendar/locale/vi_VN"; // Import locale tiếng Vi�
 dayjs.locale("vi");
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 interface EventPattern {
   startDate: string;
@@ -166,18 +168,18 @@ const EventCalendar: React.FC = () => {
     const monthOptions = [];
     for (let i = 0; i < 12; i++) {
       monthOptions.push(
-        <option key={i} value={i}>
+        <Option key={i} value={i}>
           {`Tháng ${i + 1}`}
-        </option>
+        </Option>
       );
     }
 
     const yearOptions = [];
     for (let i = currentYear - 10; i <= currentYear + 10; i++) {
       yearOptions.push(
-        <option key={i} value={i}>
+        <Option key={i} value={i}>
           {i}
-        </option>
+        </Option>
       );
     }
 
@@ -193,26 +195,29 @@ const EventCalendar: React.FC = () => {
         <Button size="small" onClick={goToToday}>
           Hôm nay
         </Button>
-        <div>
-          <select
+        <div style={{ display: "flex", gap: 8 }}>
+          <Select
             value={currentMonth}
-            onChange={(e) => {
-              const newValue = value.month(parseInt(e.target.value, 10));
+            onChange={(newMonth) => {
+              const newValue = value.month(newMonth);
               onChange(newValue);
             }}
-            style={{ marginRight: 8 }}
+            style={{ width: 120 }}
+            size="small"
           >
             {monthOptions}
-          </select>
-          <select
+          </Select>
+          <Select
             value={currentYear}
-            onChange={(e) => {
-              const newValue = value.year(parseInt(e.target.value, 10));
+            onChange={(newYear) => {
+              const newValue = value.year(newYear);
               onChange(newValue);
             }}
+            style={{ width: 100 }}
+            size="small"
           >
             {yearOptions}
-          </select>
+          </Select>
         </div>
       </div>
     );
@@ -286,6 +291,12 @@ const EventCalendar: React.FC = () => {
     );
   };
 
+  const toTitleCase = (str: string) => {
+    return str.replace(/\w\S*/g, (txt) => {
+      return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
+    });
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -303,7 +314,7 @@ const EventCalendar: React.FC = () => {
         type="error"
         showIcon
         action={
-          <button
+          <Button
             onClick={fetchEvents}
             style={{
               border: "none",
@@ -313,7 +324,7 @@ const EventCalendar: React.FC = () => {
             }}
           >
             Thử lại
-          </button>
+          </Button>
         }
       />
     );
@@ -352,7 +363,9 @@ const EventCalendar: React.FC = () => {
                 <div key={index} className="upcoming-event-item">
                   <div className="event-date">
                     <Text strong>
-                      {dayjs(event.date).format("dddd, DD/MM/YYYY")}
+                      {toTitleCase(
+                        dayjs(event.date).format("dddd, DD/MM/YYYY")
+                      )}
                     </Text>
                   </div>
                   <div className="event-info">
