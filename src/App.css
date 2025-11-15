@@ -1,17 +1,20 @@
 :root {
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --dark-bg: #0f0f23;
-  --darker-bg: #0a0a1a;
-  --card-bg: #1a1a2e;
-  --card-hover: #22223a;
+  --light-bg: #f8f9fa;
+  --lighter-bg: #ffffff;
+  --card-bg: #ffffff;
+  --card-hover: #f8f9ff;
   --accent-primary: #ff6b6b;
   --accent-secondary: #4ecdc4;
   --accent-tertiary: #45b7d1;
-  --text-light: #ffffff;
-  --text-muted: #b8b8d6;
-  --text-highlight: #ffd700;
-  --border-glow: rgba(102, 126, 234, 0.3);
-  --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.2);
+  --text-dark: #2d3748;
+  --text-darker: #1a202c;
+  --text-muted: #718096;
+  --text-highlight: #2b6cb0;
+  --border-light: #e2e8f0;
+  --border-glow: rgba(102, 126, 234, 0.2);
+  --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 8px 25px rgba(102, 126, 234, 0.15);
 }
 
 * {
@@ -19,29 +22,25 @@
 }
 
 body {
-  background: var(--dark-bg);
-  color: var(--text-light);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--light-bg);
+  color: var(--text-dark);
+  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
 }
 
 .app-layout {
   min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    var(--darker-bg) 0%,
-    var(--dark-bg) 50%,
-    #16213e 100%
-  );
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
 }
 
 .app-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: var(--text-light);
+  color: white;
   text-align: center;
-  padding: 0 20px;
+  padding: 30px 20px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
 }
 
 .app-header::before {
@@ -54,7 +53,7 @@ body {
   background: linear-gradient(
     45deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.2) 50%,
     transparent 70%
   );
   animation: shimmer 3s infinite;
@@ -70,27 +69,28 @@ body {
 }
 
 .app-header h1 {
-  color: var(--text-light);
+  color: white;
   margin: 0;
-  font-size: 2.5rem;
-  font-weight: 700;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  font-size: 2.8rem;
+  font-weight: 800;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   position: relative;
   z-index: 1;
+  letter-spacing: -0.5px;
 }
 
 .app-header p {
-  color: var(--text-highlight);
-  margin: 8px 0 0 0;
-  font-size: 1.1rem;
-  font-weight: 300;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 12px 0 0 0;
+  font-size: 1.2rem;
+  font-weight: 400;
   position: relative;
   z-index: 1;
-  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
 }
 
 .app-content {
-  padding: 24px;
+  padding: 32px 24px;
   background: transparent;
 }
 
@@ -99,7 +99,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
+  padding: 100px 20px;
   background: transparent;
 }
 
@@ -108,9 +108,10 @@ body {
 }
 
 .loading-container .ant-typography {
-  color: var(--text-light);
-  margin-top: 16px;
-  font-size: 1.1rem;
+  color: var(--text-darker);
+  margin-top: 20px;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .event-calendar {
@@ -121,31 +122,35 @@ body {
 /* Card Styles */
 .ant-card {
   background: var(--card-bg) !important;
-  border: 1px solid var(--border-glow) !important;
-  border-radius: 12px !important;
-  box-shadow: var(--shadow-glow) !important;
-  transition: all 0.3s ease !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-light) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden;
 }
 
 .ant-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4) !important;
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-glow) !important;
   border-color: var(--accent-primary) !important;
 }
 
 .ant-card-head {
-  background: transparent !important;
-  border-bottom: 1px solid var(--border-glow) !important;
+  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%) !important;
+  border-bottom: 2px solid var(--border-light) !important;
+  padding: 20px 24px !important;
 }
 
 .ant-card-head-title {
-  color: var(--text-highlight) !important;
-  font-size: 1.3rem !important;
-  font-weight: 600 !important;
+  color: var(--text-darker) !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px;
 }
 
 .ant-card-body {
   background: transparent !important;
+  padding: 24px !important;
 }
 
 /* Calendar Styles */
@@ -161,18 +166,28 @@ body {
 .ant-picker-calendar-header {
   background: transparent !important;
   border: none !important;
-  padding: 16px 0 !important;
+  padding: 20px 0 !important;
+  margin-bottom: 16px;
 }
 
 .ant-picker-calendar .ant-select-selector,
 .ant-picker-calendar .ant-btn {
   background: var(--card-bg) !important;
-  color: var(--text-light) !important;
-  border: 1px solid var(--border-glow) !important;
+  color: var(--text-darker) !important;
+  border: 2px solid var(--border-light) !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.ant-picker-calendar .ant-select-selector:hover,
+.ant-picker-calendar .ant-btn:hover {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2) !important;
 }
 
 .ant-picker-calendar .ant-select-arrow {
-  color: var(--text-light) !important;
+  color: var(--text-darker) !important;
 }
 
 .ant-picker-cell {
@@ -181,88 +196,103 @@ body {
 }
 
 .ant-picker-cell-in-view {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid var(--border-glow) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid var(--border-light) !important;
+  transition: all 0.3s ease !important;
 }
 
 .ant-picker-cell-in-view:hover {
-  background: rgba(102, 126, 234, 0.1) !important;
+  background: rgba(102, 126, 234, 0.05) !important;
   border-color: var(--accent-primary) !important;
+  transform: scale(1.02);
 }
 
 .ant-picker-cell-selected .ant-picker-cell-inner {
   background: var(--accent-primary) !important;
+  color: white !important;
+  font-weight: 600;
 }
 
 .ant-picker-calendar-date {
   background: transparent !important;
   border: none !important;
+  border-radius: 8px !important;
 }
 
 .ant-picker-calendar-date-value {
-  color: var(--text-light) !important;
+  color: var(--text-darker) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
 }
 
 .ant-picker-calendar-date-today .ant-picker-calendar-date-value {
-  color: var(--text-highlight) !important;
-  font-weight: bold;
+  color: var(--accent-primary) !important;
+  font-weight: 800 !important;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 2px 6px;
+  border-radius: 6px;
 }
 
 .ant-picker-calendar-date-content {
-  min-height: 80px;
+  min-height: 90px;
   background: transparent !important;
+  padding: 4px !important;
 }
 
 /* Event Tags */
 .events {
-  min-height: 40px;
+  min-height: 45px;
 }
 
 .event-item {
-  margin: 2px 0;
+  margin: 3px 0;
 }
 
 .event-item > .ant-tag {
   color: #000000 !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   border: none !important;
-  border-radius: 6px !important;
-  padding: 2px 6px !important;
-  margin: 1px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 4px 8px !important;
+  margin: 2px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
   transition: all 0.3s ease !important;
+  font-size: 11px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
 
 .event-item > .ant-tag:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  transform: scale(1.08) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .month-events {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .month-events .ant-tag {
   background: var(--accent-secondary) !important;
   color: #000 !important;
   border: none !important;
-  margin: 2px !important;
+  margin: 3px !important;
+  font-weight: 600;
 }
 
 /* Upcoming Events */
 .upcoming-events .upcoming-event-item {
   display: flex;
   align-items: flex-start;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-glow);
+  padding: 16px 0;
+  border-bottom: 2px solid var(--border-light);
   transition: all 0.3s ease;
 }
 
 .upcoming-events .upcoming-event-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding-left: 8px;
-  padding-right: 8px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+  border-radius: 12px;
+  padding: 16px 12px;
+  transform: translateX(4px);
+  border-bottom-color: transparent;
 }
 
 .upcoming-events .upcoming-event-item:last-child {
@@ -270,14 +300,16 @@ body {
 }
 
 .event-date {
-  min-width: 120px;
-  margin-right: 16px;
-  background: var(--accent-primary);
+  min-width: 140px;
+  margin-right: 20px;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #ff8e8e 100%);
   color: #000;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .event-info {
@@ -285,28 +317,33 @@ body {
 }
 
 .event-info .ant-typography strong {
-  color: var(--text-highlight) !important;
-  font-size: 1.1rem;
+  color: var(--text-darker) !important;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
 }
 
 .event-info .ant-typography-secondary {
   color: var(--text-muted) !important;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 /* Event Summary */
 .event-summary {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-glow);
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border-light);
   transition: all 0.3s ease;
 }
 
 .event-summary:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 12px;
-  margin-left: -12px;
-  margin-right: -12px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin-left: -16px;
+  margin-right: -16px;
+  transform: translateY(-2px);
 }
 
 .event-summary:last-child {
@@ -315,20 +352,27 @@ body {
 }
 
 .event-summary .ant-tag {
-  background: var(--accent-tertiary) !important;
+  background: linear-gradient(
+    135deg,
+    var(--accent-tertiary) 0%,
+    #5bc7e6 100%
+  ) !important;
   color: #000 !important;
   border: none !important;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  padding: 4px 12px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(69, 183, 209, 0.3);
 }
 
 /* Typography */
 .ant-typography {
-  color: var(--text-light) !important;
+  color: var(--text-dark) !important;
 }
 
 .ant-typography strong {
-  color: var(--text-highlight) !important;
+  color: var(--text-darker) !important;
 }
 
 .ant-typography-secondary {
@@ -337,25 +381,29 @@ body {
 
 /* Title Styles */
 .ant-typography h3 {
-  color: var(--text-highlight) !important;
-  font-weight: 600 !important;
-  margin-bottom: 16px !important;
+  color: var(--text-darker) !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
+  font-size: 1.6rem !important;
+  letter-spacing: -0.5px;
 }
 
 .ant-typography h3 .anticon {
   color: var(--accent-primary) !important;
-  margin-right: 8px !important;
+  margin-right: 12px !important;
 }
 
 /* Alert Styles */
 .ant-alert {
-  border-radius: 12px !important;
-  border: 1px solid var(--border-glow) !important;
+  border-radius: 16px !important;
+  border: 2px solid var(--border-light) !important;
   background: var(--card-bg) !important;
+  box-shadow: var(--shadow-light) !important;
 }
 
 .ant-alert-message {
-  color: var(--text-light) !important;
+  color: var(--text-darker) !important;
+  font-weight: 600;
 }
 
 .ant-alert-description {
@@ -364,12 +412,14 @@ body {
 
 .ant-alert-error {
   border-color: #ff4d4f !important;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%) !important;
 }
 
 .ant-alert-action button {
   color: var(--accent-primary) !important;
   border: none !important;
   background: transparent !important;
+  font-weight: 600;
 }
 
 .ant-picker-date-panel
@@ -378,65 +428,104 @@ body {
   > thead
   > tr
   > th {
-  color: var(--text-light) !important;
+  color: var(--text-darker) !important;
+  font-weight: 700 !important;
+  font-size: 13px;
 }
 
 /* Button Styles */
 .ant-btn {
-  border-radius: 6px !important;
+  border-radius: 10px !important;
   font-weight: 600 !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 2px solid transparent !important;
 }
 
 .ant-btn-primary {
   background: var(--primary-gradient) !important;
   border: none !important;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
 }
 
 .ant-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+}
+
+.ant-btn-default {
+  border: 2px solid var(--border-light) !important;
+  color: var(--text-darker) !important;
+  font-weight: 600;
+}
+
+.ant-btn-default:hover {
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15) !important;
 }
 
 /* Select Styles */
 .ant-select-dropdown {
   background: var(--card-bg) !important;
-  border: 1px solid var(--border-glow) !important;
+  border: 2px solid var(--border-light) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-glow) !important;
 }
 
 .ant-select-item {
-  color: var(--text-light) !important;
+  color: var(--text-dark) !important;
+  font-weight: 500;
+  padding: 12px 16px !important;
 }
 
 .ant-select-item-option-selected {
-  background: rgba(102, 126, 234, 0.2) !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  font-weight: 600;
 }
 
 .ant-select-item-option-active {
   background: rgba(102, 126, 234, 0.1) !important;
+  color: var(--text-darker) !important;
+}
+
+/* Navigation Buttons */
+.ant-picker-calendar-header .ant-btn {
+  background: var(--card-bg) !important;
+  border: 2px solid var(--border-light) !important;
+  color: var(--text-darker) !important;
+  font-weight: 600;
+}
+
+.ant-picker-calendar-header .ant-btn:hover {
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+  transform: translateY(-1px);
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
   .app-content {
-    padding: 16px;
+    padding: 20px 16px;
   }
 
   .app-header h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
 
   .app-header p {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
   .events {
-    min-height: 30px;
+    min-height: 35px;
   }
 
   .event-date {
-    min-width: 100px;
-    margin-right: 12px;
+    min-width: 120px;
+    margin-right: 16px;
+    font-size: 0.9rem;
   }
 
   .upcoming-events .upcoming-event-item {
@@ -444,31 +533,41 @@ body {
   }
 
   .event-date {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     margin-right: 0;
+    min-width: 100%;
   }
 
   .ant-card {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+  }
+
+  .ant-card-body {
+    padding: 20px !important;
   }
 }
 
 @media (max-width: 480px) {
   .app-content {
-    padding: 12px;
+    padding: 16px 12px;
   }
 
   .app-header {
-    padding: 15px;
+    padding: 24px 16px;
   }
 
   .app-header h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
 
   .event-date {
-    min-width: 80px;
-    font-size: 0.9rem;
+    min-width: 100%;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  .ant-typography h3 {
+    font-size: 1.4rem !important;
   }
 }
 
@@ -478,7 +577,8 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--darker-bg);
+  background: var(--light-bg);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -488,4 +588,34 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-secondary);
+}
+
+/* Animation for cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ant-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Gradient backgrounds for different sections */
+.upcoming-events .ant-card-body {
+  background: linear-gradient(
+    135deg,
+    #f8f9ff 0%,
+    #ffffff 50%,
+    #f8f9ff 100%
+  ) !important;
+}
+
+.event-calendar .ant-card:first-child {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%) !important;
 }
