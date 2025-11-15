@@ -70,7 +70,7 @@ const EventCalendar: React.FC = () => {
   const processEvents = (eventsData: Event[]) => {
     const allCalendarEvents: CalendarEvent[] = [];
     const today = dayjs();
-    const endDate = today.add(6, "month"); // Show events for next 6 months
+    const endDate = today.add(6, "year"); // Show events for next 6 years
 
     eventsData.forEach((event) => {
       event.pattern.forEach((pattern) => {
@@ -191,7 +191,9 @@ const EventCalendar: React.FC = () => {
           </Tag>
         ))}
         {monthEvents.length > 3 && (
-          <Tag style={{ fontSize: "10px" }}>+{monthEvents.length - 3} more</Tag>
+          <Tag style={{ fontSize: "10px" }}>
+            +{monthEvents.length - 3} sự kiện khác
+          </Tag>
         )}
       </div>
     );
@@ -201,7 +203,7 @@ const EventCalendar: React.FC = () => {
     return (
       <div className="loading-container">
         <Spin size="large" />
-        <Text>Loading events...</Text>
+        <Text>Đang tải sự kiện...</Text>
       </div>
     );
   }
@@ -209,7 +211,7 @@ const EventCalendar: React.FC = () => {
   if (error) {
     return (
       <Alert
-        message="Error"
+        message="Lỗi"
         description={error}
         type="error"
         showIcon
@@ -223,7 +225,7 @@ const EventCalendar: React.FC = () => {
               cursor: "pointer",
             }}
           >
-            Retry
+            Thử lại
           </button>
         }
       />
@@ -236,7 +238,7 @@ const EventCalendar: React.FC = () => {
         <Col xs={24} lg={24}>
           <Card>
             <Title level={3}>
-              <CalendarOutlined /> Event Calendar
+              <CalendarOutlined /> Lịch Sự Kiện
             </Title>
             <Calendar
               dateCellRender={dateCellRender}
@@ -246,7 +248,7 @@ const EventCalendar: React.FC = () => {
         </Col>
 
         <Col xs={24} lg={12}>
-          <Card title="Upcoming Events" className="upcoming-events">
+          <Card title="Sự Kiện Sắp Diễn Ra" className="upcoming-events">
             {calendarEvents
               .filter(
                 (event) =>
@@ -258,7 +260,7 @@ const EventCalendar: React.FC = () => {
               .map((event, index) => (
                 <div key={index} className="upcoming-event-item">
                   <div className="event-date">
-                    <Text strong>{dayjs(event.date).format("MMM DD")}</Text>
+                    <Text strong>{dayjs(event.date).format("DD/MM")}</Text>
                   </div>
                   <div className="event-info">
                     <Text strong style={{ color: event.event.color }}>
@@ -275,7 +277,7 @@ const EventCalendar: React.FC = () => {
         </Col>
 
         <Col xs={24} lg={12}>
-          <Card title="All Events">
+          <Card title="Tất Cả Sự Kiện">
             {events.map((event, index) => (
               <div key={index} className="event-summary">
                 <Tag color={event.color} style={{ marginBottom: 8 }}>
