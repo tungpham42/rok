@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Card, Tag, Spin, Alert, Typography, Row, Col } from "antd";
+import {
+  Calendar,
+  Card,
+  Tag,
+  Spin,
+  Alert,
+  Typography,
+  Row,
+  Col,
+  ConfigProvider,
+} from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
+import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
+import viVN from "antd/locale/vi_VN"; // Import Vietnamese locale for Ant Design
+
+// Set Vietnamese as default locale for dayjs
+dayjs.locale("vi");
 
 const { Title, Text } = Typography;
 
@@ -25,6 +40,33 @@ interface CalendarEvent {
   isStart: boolean;
   isDuring: boolean;
 }
+
+// Vietnamese month names for custom formatting if needed
+const vietnameseMonths = [
+  "Tháng 1",
+  "Tháng 2",
+  "Tháng 3",
+  "Tháng 4",
+  "Tháng 5",
+  "Tháng 6",
+  "Tháng 7",
+  "Tháng 8",
+  "Tháng 9",
+  "Tháng 10",
+  "Tháng 11",
+  "Tháng 12",
+];
+
+// Vietnamese day names
+const vietnameseDays = [
+  "Chủ Nhật",
+  "Thứ Hai",
+  "Thứ Ba",
+  "Thứ Tư",
+  "Thứ Năm",
+  "Thứ Sáu",
+  "Thứ Bảy",
+];
 
 const EventCalendar: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -199,6 +241,15 @@ const EventCalendar: React.FC = () => {
     );
   };
 
+  // Format compact date for upcoming events
+  const formatCompactVietnameseDate = (date: Dayjs) => {
+    const weekday = vietnameseDays[date.day()].substring(4); // Remove "Thứ " prefix for compact view
+    const day = date.date();
+    const month = date.month() + 1;
+    const year = date.year();
+    return `${weekday}, ${day}/${month}/${year}`;
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -233,68 +284,150 @@ const EventCalendar: React.FC = () => {
   }
 
   return (
-    <div className="event-calendar">
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={24}>
-          <Card>
-            <Title level={3}>
-              <CalendarOutlined /> Lịch Sự Kiện
-            </Title>
-            <Calendar
-              dateCellRender={dateCellRender}
-              monthCellRender={monthCellRender}
-            />
-          </Card>
-        </Col>
+    <ConfigProvider locale={viVN}>
+      <div className="event-calendar">
+        <Row gutter={[16, 16]}>
+          <Col xs={24} lg={24}>
+            <Card>
+              <Title level={3}>
+                <CalendarOutlined /> Lịch Sự Kiện
+              </Title>
+              <Calendar
+                dateCellRender={dateCellRender}
+                monthCellRender={monthCellRender}
+                headerRender={({ value, onChange }) => {
+                  const current = value;
+                  const monthOptions = [];
+                  for (let i = 0; i < 12; i++) {
+                    monthOptions.push(
+                      <option key={i} value={i}>
+                        {vietnameseMonths[i]}
+                      </option>
+                    );
+                  }
 
-        <Col xs={24} lg={12}>
-          <Card title="Sự Kiện Sắp Diễn Ra" className="upcoming-events">
-            {calendarEvents
-              .filter(
-                (event) =>
-                  dayjs(event.date).isAfter(dayjs().subtract(1, "day")) &&
-                  event.isStart
-              )
-              .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
-              .slice(0, 10)
-              .map((event, index) => (
-                <div key={index} className="upcoming-event-item">
-                  <div className="event-date">
-                    <Text strong>{dayjs(event.date).format("DD/MM")}</Text>
+                  const year = current.year();
+                  const month = current.month();
+                  const options = [];
+                  for (let i = year - 10; i < year + 10; i += 1) {
+                    options.push(
+                      <option key={i} value={i}>
+                        {i}
+                      </option>
+                    );
+                  }
+
+                  return (
+                    <div
+                      style={{
+                        padding: 8,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 16,
+                      }}
+                    >
+                      <select
+                        value={month}
+                        onChange={(e) => {
+                          const newValue = current.month(
+                            parseInt(e.target.value, 10)
+                          );
+                          onChange(newValue);
+                        }}
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: 4,
+                          border: "1px solid #d9d9d9",
+                        }}
+                      >
+                        {monthOptions}
+                      </select>
+                      <select
+                        value={year}
+                        onChange={(e) => {
+                          const newValue = current.year(
+                            parseInt(e.target.value, 10)
+                          );
+                          onChange(newValue);
+                        }}
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: 4,
+                          border: "1px solid #d9d9d9",
+                        }}
+                      >
+                        {options}
+                      </select>
+                    </div>
+                  );
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <Card title="Sự Kiện Sắp Diễn Ra" className="upcoming-events">
+              {calendarEvents
+                .filter(
+                  (event) =>
+                    dayjs(event.date).isAfter(dayjs().subtract(1, "day")) &&
+                    event.isStart
+                )
+                .sort(
+                  (a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf()
+                )
+                .slice(0, 10)
+                .map((event, index) => (
+                  <div key={index} className="upcoming-event-item">
+                    <div className="event-date">
+                      <Text
+                        strong
+                        style={{ fontSize: "12px", lineHeight: "1.2" }}
+                      >
+                        {formatCompactVietnameseDate(dayjs(event.date))}
+                      </Text>
+                    </div>
+                    <div className="event-info">
+                      <Text
+                        strong
+                        style={{ color: event.event.color, fontSize: "14px" }}
+                      >
+                        {event.event.title}
+                      </Text>
+                      <br />
+                      <Text
+                        type="secondary"
+                        style={{ fontSize: "12px", lineHeight: "1.2" }}
+                      >
+                        {event.event.description}
+                      </Text>
+                    </div>
                   </div>
-                  <div className="event-info">
-                    <Text strong style={{ color: event.event.color }}>
-                      {event.event.title}
-                    </Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: "12px" }}>
-                      {event.event.description}
-                    </Text>
-                  </div>
+                ))}
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <Card title="Tất Cả Sự Kiện">
+              {events.map((event, index) => (
+                <div key={index} className="event-summary">
+                  <Tag color={event.color} style={{ marginBottom: 8 }}>
+                    {event.title}
+                  </Tag>
+                  <Text
+                    type="secondary"
+                    style={{ display: "block", fontSize: "12px" }}
+                  >
+                    {event.description}
+                  </Text>
                 </div>
               ))}
-          </Card>
-        </Col>
-
-        <Col xs={24} lg={12}>
-          <Card title="Tất Cả Sự Kiện">
-            {events.map((event, index) => (
-              <div key={index} className="event-summary">
-                <Tag color={event.color} style={{ marginBottom: 8 }}>
-                  {event.title}
-                </Tag>
-                <Text
-                  type="secondary"
-                  style={{ display: "block", fontSize: "12px" }}
-                >
-                  {event.description}
-                </Text>
-              </div>
-            ))}
-          </Card>
-        </Col>
-      </Row>
-    </div>
+            </Card>
+          </Col>
+        </Row>
+      </div>
+    </ConfigProvider>
   );
 };
 
