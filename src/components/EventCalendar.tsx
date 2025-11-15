@@ -3,7 +3,6 @@ import { Calendar, Card, Tag, Spin, Alert, Typography, Row, Col } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-import axios from "axios";
 
 const { Title, Text } = Typography;
 
@@ -40,11 +39,28 @@ const EventCalendar: React.FC = () => {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://www.rokhub.xyz/api/events");
-      setEvents(response.data);
-      processEvents(response.data);
+      setError("");
+
+      // Use Netlify function endpoint
+      const response = await fetch("/.netlify/functions/fetch-events");
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch events: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Handle error response from function
+      if (data.error) {
+        throw new Error(data.message || data.error);
+      }
+
+      setEvents(data);
+      processEvents(data);
     } catch (err) {
-      setError("Failed to fetch events");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch events";
+      setError(errorMessage);
       console.error("Error fetching events:", err);
     } finally {
       setLoading(false);
