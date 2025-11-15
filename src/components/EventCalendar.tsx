@@ -1,495 +1,280 @@
-import React, { useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
-import { Badge, Button, Modal, Tag, Space, Divider } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { ROKEvent } from "../types";
+import React, { useState, useEffect } from "react";
+import { Calendar, Card, Tag, Spin, Alert, Typography, Row, Col } from "antd";
+import { CalendarOutlined } from "@ant-design/icons";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import axios from "axios";
 
-interface EventCalendarProps {
-  events: ROKEvent[];
-  onEventClick: (event: ROKEvent) => void;
+const { Title, Text } = Typography;
+
+interface EventPattern {
+  startDate: string;
+  frequency: string;
+  duration: number;
 }
 
-const EventCalendar: React.FC<EventCalendarProps> = ({
-  events,
-  onEventClick,
-}) => {
-  const [currentWeek, setCurrentWeek] = useState(dayjs());
-  const [selectedEvent, setSelectedEvent] = useState<ROKEvent | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+interface Event {
+  pattern: EventPattern[];
+  title: string;
+  description: string;
+  color: string;
+}
 
-  const startOfWeek = currentWeek.startOf("week"); // Thứ 2
-  const days = Array.from({ length: 7 }).map((_, i) =>
-    startOfWeek.add(i, "day")
-  );
+interface CalendarEvent {
+  date: string;
+  event: Event;
+  isStart: boolean;
+  isDuring: boolean;
+}
 
-  // Hàm chuyển đổi thứ viết tắt sang tiếng Việt
-  const getVietnameseWeekdayShort = (day: Dayjs) => {
-    const weekdaysShort = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-    return weekdaysShort[day.day()];
+const EventCalendar: React.FC = () => {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("https://www.rokhub.xyz/api/events");
+      setEvents(response.data);
+      processEvents(response.data);
+    } catch (err) {
+      setError("Failed to fetch events");
+      console.error("Error fetching events:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getEventTypeColor = (type: ROKEvent["eventType"]) => {
-    const colors: Record<ROKEvent["eventType"], string> = {
-      kingdom: "blue",
-      alliance: "green",
-      personal: "orange",
-      special: "purple",
-      kvk: "red",
-      ceremony: "gold",
-      training: "cyan",
-      competitive: "magenta",
-      gathering: "lime",
-      expedition: "volcano",
-      wheel: "geekblue",
-      card: "purple",
-      power: "red",
-      building: "orange",
-      research: "blue",
-      commander: "cyan",
-      troop: "green",
-      barbarian: "volcano",
-      fort: "magenta",
-      resource: "lime",
-      vip: "gold",
-      recharge: "geekblue",
-      alliance_war: "red",
-    };
-    return colors[type];
+  const processEvents = (eventsData: Event[]) => {
+    const allCalendarEvents: CalendarEvent[] = [];
+    const today = dayjs();
+    const endDate = today.add(6, "month"); // Show events for next 6 months
+
+    eventsData.forEach((event) => {
+      event.pattern.forEach((pattern) => {
+        const startDate = dayjs(pattern.startDate);
+        let currentDate = startDate;
+
+        while (currentDate.isBefore(endDate)) {
+          // Add start date
+          allCalendarEvents.push({
+            date: currentDate.format("YYYY-MM-DD"),
+            event: event,
+            isStart: true,
+            isDuring: false,
+          });
+
+          // Add days during the event
+          for (let i = 1; i < pattern.duration; i++) {
+            const duringDate = currentDate.add(i, "day");
+            if (duringDate.isBefore(endDate)) {
+              allCalendarEvents.push({
+                date: duringDate.format("YYYY-MM-DD"),
+                event: event,
+                isStart: false,
+                isDuring: true,
+              });
+            }
+          }
+
+          // Calculate next occurrence based on frequency
+          switch (pattern.frequency) {
+            case "one-week":
+              currentDate = currentDate.add(1, "week");
+              break;
+            case "two-weeks":
+              currentDate = currentDate.add(2, "weeks");
+              break;
+            case "four-weeks":
+              currentDate = currentDate.add(4, "weeks");
+              break;
+            case "five-weeks":
+              currentDate = currentDate.add(5, "weeks");
+              break;
+            case "eight-weeks":
+              currentDate = currentDate.add(8, "weeks");
+              break;
+            default:
+              currentDate = currentDate.add(4, "weeks"); // default to 4 weeks
+          }
+        }
+      });
+    });
+
+    setCalendarEvents(allCalendarEvents);
   };
 
-  const getEventTypeText = (type: ROKEvent["eventType"]) => {
-    const texts: Record<ROKEvent["eventType"], string> = {
-      kingdom: "Toàn Vương Quốc",
-      alliance: "Liên Minh",
-      personal: "Cá Nhân",
-      special: "Đặc Biệt",
-      kvk: "KVK",
-      ceremony: "Lễ Hội",
-      training: "Đào Tạo",
-      competitive: "Cạnh Tranh",
-      gathering: "Thu Thập",
-      expedition: "Thám Hiểm",
-      wheel: "Vòng Quay",
-      card: "Thẻ Bài",
-      power: "Sức Mạnh",
-      building: "Xây Dựng",
-      research: "Nghiên Cứu",
-      commander: "Tướng",
-      troop: "Quân Đội",
-      barbarian: "Barbarian",
-      fort: "Pháo Đài",
-      resource: "Tài Nguyên",
-      vip: "VIP",
-      recharge: "Nạp",
-      alliance_war: "Chiến Liên Minh",
-    };
-    return texts[type];
+  const getDateEvents = (date: Dayjs) => {
+    const dateStr = date.format("YYYY-MM-DD");
+    return calendarEvents.filter((event) => event.date === dateStr);
   };
 
-  const getPriorityText = (priority: ROKEvent["priority"]) => {
-    const texts: Record<ROKEvent["priority"], string> = {
-      low: "Thấp",
-      medium: "Trung bình",
-      high: "Cao",
-      critical: "Tối cao",
-    };
-    return texts[priority];
+  const dateCellRender = (value: Dayjs) => {
+    const dateEvents = getDateEvents(value);
+
+    return (
+      <div className="events">
+        {dateEvents.map((event, index) => (
+          <div key={index} className="event-item">
+            <Tag
+              color={event.event.color}
+              style={{
+                margin: "1px",
+                fontSize: "10px",
+                border: event.isStart ? "2px solid #000" : "none",
+                opacity: event.isDuring ? 0.7 : 1,
+              }}
+            >
+              {event.isStart ? "🎯" : "📅"} {event.event.title}
+            </Tag>
+          </div>
+        ))}
+      </div>
+    );
   };
 
-  const getPriorityColor = (priority: ROKEvent["priority"]) => {
-    const colors: Record<ROKEvent["priority"], string> = {
-      low: "green",
-      medium: "orange",
-      high: "red",
-      critical: "magenta",
-    };
-    return colors[priority];
+  const getMonthData = (value: Dayjs) => {
+    const monthEvents = calendarEvents.filter(
+      (event) =>
+        dayjs(event.date).month() === value.month() &&
+        dayjs(event.date).year() === value.year()
+    );
+
+    const uniqueEvents = monthEvents.reduce((acc, curr) => {
+      if (
+        !acc.find(
+          (event: CalendarEvent) => event.event.title === curr.event.title
+        )
+      ) {
+        acc.push(curr);
+      }
+      return acc;
+    }, [] as CalendarEvent[]);
+
+    return uniqueEvents;
   };
 
-  const getEventsForDate = (date: Dayjs) => {
-    return events.filter((event) => dayjs(event.startTime).isSame(date, "day"));
+  const monthCellRender = (value: Dayjs) => {
+    const monthEvents = getMonthData(value);
+
+    return (
+      <div className="month-events">
+        {monthEvents.slice(0, 3).map((event, index) => (
+          <Tag
+            key={index}
+            color={event.event.color}
+            style={{ margin: "1px", fontSize: "10px" }}
+          >
+            {event.event.title}
+          </Tag>
+        ))}
+        {monthEvents.length > 3 && (
+          <Tag style={{ fontSize: "10px" }}>+{monthEvents.length - 3} more</Tag>
+        )}
+      </div>
+    );
   };
 
-  const handleEventClick = (event: ROKEvent) => {
-    setSelectedEvent(event);
-    setModalVisible(true);
-    onEventClick(event); // Vẫn gọi callback gốc nếu cần
-  };
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <Spin size="large" />
+        <Text>Loading events...</Text>
+      </div>
+    );
+  }
 
-  const handleCloseModal = () => {
-    setModalVisible(false);
-    setSelectedEvent(null);
-  };
-
-  const goToPreviousWeek = () => {
-    setCurrentWeek(currentWeek.subtract(1, "week"));
-  };
-
-  const goToNextWeek = () => {
-    setCurrentWeek(currentWeek.add(1, "week"));
-  };
-
-  const goToCurrentWeek = () => {
-    setCurrentWeek(dayjs());
-  };
-
-  const weekRange = `${startOfWeek.format("DD/MM")} → ${startOfWeek
-    .add(6, "day")
-    .format("DD/MM")}`;
-  const isCurrentWeek = currentWeek.isSame(dayjs(), "week");
+  if (error) {
+    return (
+      <Alert
+        message="Error"
+        description={error}
+        type="error"
+        showIcon
+        action={
+          <button
+            onClick={fetchEvents}
+            style={{
+              border: "none",
+              background: "none",
+              color: "#1890ff",
+              cursor: "pointer",
+            }}
+          >
+            Retry
+          </button>
+        }
+      />
+    );
+  }
 
   return (
-    <>
-      <div
-        style={{
-          background: "white",
-          padding: "12px",
-          borderRadius: "10px",
-        }}
-      >
-        {/* Header với navigation */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "12px",
-            flexWrap: "wrap",
-            gap: "8px",
-          }}
-        >
-          <Button
-            icon={<LeftOutlined />}
-            onClick={goToPreviousWeek}
-            size="small"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            Tuần trước
-          </Button>
+    <div className="event-calendar">
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={16}>
+          <Card>
+            <Title level={3}>
+              <CalendarOutlined /> Event Calendar
+            </Title>
+            <Calendar
+              dateCellRender={dateCellRender}
+              monthCellRender={monthCellRender}
+            />
+          </Card>
+        </Col>
 
-          <div
-            style={{
-              textAlign: "center",
-              flex: 1,
-              minWidth: "200px",
-            }}
-          >
-            <div
-              style={{
-                fontWeight: "bold",
-                fontSize: "16px",
-                marginBottom: "2px",
-              }}
-            >
-              Lịch Tuần – {weekRange}
-            </div>
-            <div
-              style={{
-                fontSize: "12px",
-                color: "#666",
-              }}
-            >
-              {startOfWeek.format("DD/MM/YYYY")} -{" "}
-              {startOfWeek.add(6, "day").format("DD/MM/YYYY")}
-            </div>
-          </div>
+        <Col xs={24} lg={8}>
+          <Card title="Upcoming Events" className="upcoming-events">
+            {calendarEvents
+              .filter(
+                (event) =>
+                  dayjs(event.date).isAfter(dayjs().subtract(1, "day")) &&
+                  event.isStart
+              )
+              .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
+              .slice(0, 10)
+              .map((event, index) => (
+                <div key={index} className="upcoming-event-item">
+                  <div className="event-date">
+                    <Text strong>{dayjs(event.date).format("MMM DD")}</Text>
+                  </div>
+                  <div className="event-info">
+                    <Text strong style={{ color: event.event.color }}>
+                      {event.event.title}
+                    </Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: "12px" }}>
+                      {event.event.description}
+                    </Text>
+                  </div>
+                </div>
+              ))}
+          </Card>
 
-          <div style={{ display: "flex", gap: "8px" }}>
-            {!isCurrentWeek && (
-              <Button
-                onClick={goToCurrentWeek}
-                size="small"
-                type="primary"
-                ghost
-              >
-                Tuần này
-              </Button>
-            )}
-            <Button
-              icon={<RightOutlined />}
-              onClick={goToNextWeek}
-              size="small"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              Tuần sau
-            </Button>
-          </div>
-        </div>
-
-        {/* Calendar grid */}
-        <div
-          style={{
-            display: "flex",
-            overflowX: "auto",
-            gap: "8px",
-            padding: "4px 0",
-          }}
-        >
-          {days.map((day) => {
-            const items = getEventsForDate(day);
-            const isToday = day.isSame(dayjs(), "day");
-            const isWeekend = day.day() === 0 || day.day() === 6; // Chủ nhật hoặc thứ 7
-
-            return (
-              <div
-                key={day.toString()}
-                style={{
-                  minWidth: "130px",
-                  background: isToday ? "#f0f8ff" : "#fafafa",
-                  borderRadius: "8px",
-                  padding: "8px",
-                  border: `1px solid ${isToday ? "#1890ff" : "#eee"}`,
-                  flex: 1,
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: "600",
-                    marginBottom: "6px",
-                    fontSize: "14px",
-                    textAlign: "center",
-                    color: isWeekend ? "#ff4d4f" : isToday ? "#1890ff" : "#333",
-                  }}
+          <Card title="All Events" style={{ marginTop: 16 }}>
+            {events.map((event, index) => (
+              <div key={index} className="event-summary">
+                <Tag color={event.color} style={{ marginBottom: 8 }}>
+                  {event.title}
+                </Tag>
+                <Text
+                  type="secondary"
+                  style={{ display: "block", fontSize: "12px" }}
                 >
-                  {getVietnameseWeekdayShort(day)}
-                  <br />
-                  <span
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: isToday ? "bold" : "normal",
-                    }}
-                  >
-                    {day.format("DD/MM")}
-                  </span>
-                  {isToday && (
-                    <div
-                      style={{
-                        fontSize: "10px",
-                        color: "#1890ff",
-                        fontWeight: "normal",
-                        marginTop: "2px",
-                      }}
-                    >
-                      Hôm nay
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ maxHeight: "200px", overflow: "auto" }}>
-                  {items.length === 0 && (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        fontSize: "11px",
-                        color: "#999",
-                        fontStyle: "italic",
-                        padding: "8px 0",
-                      }}
-                    >
-                      Không có sự kiện
-                    </div>
-                  )}
-
-                  {items.map((event) => (
-                    <div
-                      key={event.id}
-                      onClick={() => handleEventClick(event)}
-                      style={{
-                        cursor: "pointer",
-                        marginBottom: "6px",
-                        padding: "6px",
-                        borderRadius: "6px",
-                        background: "#fff",
-                        borderLeft: `3px solid ${getEventTypeColor(
-                          event.eventType
-                        )}`,
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                        fontSize: "11px",
-                        transition: "all 0.2s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#f8f9fa";
-                        e.currentTarget.style.transform = "translateY(-1px)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "#fff";
-                        e.currentTarget.style.transform = "translateY(0)";
-                      }}
-                    >
-                      <Badge
-                        color={getEventTypeColor(event.eventType)}
-                        text={
-                          <div>
-                            <div
-                              style={{
-                                fontWeight: 500,
-                                overflow: "hidden",
-                                whiteSpace: "normal",
-                                textOverflow: "ellipsis",
-                                marginBottom: "2px",
-                              }}
-                            >
-                              {event.title}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "9px",
-                                color: "#666",
-                                overflow: "hidden",
-                                whiteSpace: "normal",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {dayjs(event.startTime).format("HH:mm")} -{" "}
-                              {dayjs(event.endTime).format("HH:mm")}
-                            </div>
-                          </div>
-                        }
-                      />
-                    </div>
-                  ))}
-                </div>
+                  {event.description}
+                </Text>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Modal hiển thị chi tiết sự kiện */}
-      <Modal
-        title="Chi Tiết Sự Kiện"
-        open={modalVisible}
-        onCancel={handleCloseModal}
-        footer={[
-          <Button key="close" onClick={handleCloseModal}>
-            Đóng
-          </Button>,
-        ]}
-        width={600}
-      >
-        {selectedEvent && (
-          <div style={{ padding: "8px 0" }}>
-            {/* Header với title và tags */}
-            <div style={{ marginBottom: "16px" }}>
-              <h2 style={{ margin: "0 0 12px 0", color: "#1890ff" }}>
-                {selectedEvent.title}
-              </h2>
-              <Space wrap size={[8, 8]}>
-                <Tag color={getEventTypeColor(selectedEvent.eventType)}>
-                  {getEventTypeText(selectedEvent.eventType)}
-                </Tag>
-                <Tag color={getPriorityColor(selectedEvent.priority)}>
-                  Ưu tiên: {getPriorityText(selectedEvent.priority)}
-                </Tag>
-                {selectedEvent.repeatable && <Tag color="green">Lặp lại</Tag>}
-              </Space>
-            </div>
-
-            <Divider style={{ margin: "16px 0" }} />
-
-            {/* Thông tin mô tả */}
-            <div style={{ marginBottom: "16px" }}>
-              <h4 style={{ marginBottom: "8px", color: "#333" }}>Mô tả</h4>
-              <p style={{ margin: 0, lineHeight: "1.5" }}>
-                {selectedEvent.description}
-              </p>
-            </div>
-
-            {/* Thông tin thời gian */}
-            <div style={{ marginBottom: "16px" }}>
-              <h4 style={{ marginBottom: "8px", color: "#333" }}>Thời gian</h4>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: "4px" }}
-              >
-                <div>
-                  <strong>Bắt đầu:</strong>{" "}
-                  {dayjs(selectedEvent.startTime).format("DD/MM/YYYY HH:mm")}
-                </div>
-                <div>
-                  <strong>Kết thúc:</strong>{" "}
-                  {dayjs(selectedEvent.endTime).format("DD/MM/YYYY HH:mm")}
-                </div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
-                  ⏱️ Kéo dài:{" "}
-                  {dayjs(selectedEvent.endTime).diff(
-                    dayjs(selectedEvent.startTime),
-                    "hour"
-                  )}{" "}
-                  giờ
-                </div>
-              </div>
-            </div>
-
-            {/* Phần thưởng */}
-            <div style={{ marginBottom: "16px" }}>
-              <h4 style={{ marginBottom: "8px", color: "#333" }}>
-                Phần thưởng
-              </h4>
-              <Space wrap size={[8, 8]}>
-                {selectedEvent.rewards.map((reward, index) => (
-                  <Tag key={index} color="gold">
-                    {reward}
-                  </Tag>
-                ))}
-              </Space>
-            </div>
-
-            {/* Yêu cầu và thông tin bổ sung */}
-            <div>
-              {selectedEvent.requirements && (
-                <div>
-                  <h4 style={{ marginBottom: "8px", color: "#333" }}>
-                    Yêu cầu
-                  </h4>
-                  <p style={{ margin: 0, fontSize: "14px" }}>
-                    {selectedEvent.requirements}
-                  </p>
-                </div>
-              )}
-
-              {selectedEvent.minPower && (
-                <div>
-                  <h4 style={{ marginBottom: "8px", color: "#333" }}>
-                    Sức mạnh tối thiểu
-                  </h4>
-                  <Tag color="red">
-                    {selectedEvent.minPower.toLocaleString()}
-                  </Tag>
-                </div>
-              )}
-
-              {selectedEvent.kingdomLevel && (
-                <div>
-                  <h4 style={{ marginBottom: "8px", color: "#333" }}>
-                    Vương quốc
-                  </h4>
-                  <Tag color="blue">{selectedEvent.kingdomLevel}+ ngày</Tag>
-                </div>
-              )}
-
-              {selectedEvent.eventStage && (
-                <div>
-                  <h4 style={{ marginBottom: "8px", color: "#333" }}>
-                    Giai đoạn
-                  </h4>
-                  <p style={{ margin: 0, fontSize: "14px" }}>
-                    {selectedEvent.eventStage}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </Modal>
-    </>
+            ))}
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
 };
 
