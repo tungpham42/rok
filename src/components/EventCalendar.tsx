@@ -11,7 +11,11 @@ import {
   Button,
   Select,
 } from "antd";
-import { CalendarOutlined } from "@ant-design/icons";
+import {
+  CalendarOutlined,
+  LeftOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import "dayjs/locale/vi"; // Import locale tiếng Việt
@@ -154,7 +158,15 @@ const EventCalendar: React.FC = () => {
     setCurrentDate(today);
   };
 
-  // Custom header renderer để thêm nút "Hôm nay"
+  const goToPreviousMonth = () => {
+    setCurrentDate(currentDate.subtract(1, "month"));
+  };
+
+  const goToNextMonth = () => {
+    setCurrentDate(currentDate.add(1, "month"));
+  };
+
+  // Custom header renderer để thêm nút "Hôm nay", "Tháng trước", "Tháng sau"
   const customHeaderRender = ({
     value,
     onChange,
@@ -186,24 +198,65 @@ const EventCalendar: React.FC = () => {
     return (
       <div
         style={{
-          padding: 8,
+          padding: "16px 8px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          gap: "12px",
         }}
       >
-        <Button size="small" onClick={goToToday}>
-          Hôm nay
-        </Button>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <Button
+            size="small"
+            onClick={goToToday}
+            type="primary"
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              border: "none",
+              fontWeight: "600",
+            }}
+          >
+            Hôm nay
+          </Button>
+          <div style={{ display: "flex", gap: "4px" }}>
+            <Button
+              size="small"
+              icon={<LeftOutlined />}
+              onClick={goToPreviousMonth}
+              style={{
+                background: "var(--card-bg)",
+                border: "1px solid var(--border-glow)",
+                color: "var(--text-light)",
+              }}
+            />
+            <Button
+              size="small"
+              icon={<RightOutlined />}
+              onClick={goToNextMonth}
+              style={{
+                background: "var(--card-bg)",
+                border: "1px solid var(--border-glow)",
+                color: "var(--text-light)",
+              }}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <Select
             value={currentMonth}
             onChange={(newMonth) => {
               const newValue = value.month(newMonth);
               onChange(newValue);
+              setCurrentDate(newValue);
             }}
             style={{ width: 120 }}
             size="small"
+            dropdownStyle={{
+              background: "var(--card-bg)",
+              border: "1px solid var(--border-glow)",
+            }}
           >
             {monthOptions}
           </Select>
@@ -212,9 +265,14 @@ const EventCalendar: React.FC = () => {
             onChange={(newYear) => {
               const newValue = value.year(newYear);
               onChange(newValue);
+              setCurrentDate(newValue);
             }}
             style={{ width: 100 }}
             size="small"
+            dropdownStyle={{
+              background: "var(--card-bg)",
+              border: "1px solid var(--border-glow)",
+            }}
           >
             {yearOptions}
           </Select>
@@ -291,12 +349,6 @@ const EventCalendar: React.FC = () => {
     );
   };
 
-  const toTitleCase = (str: string) => {
-    return str.replace(/\w\S*/g, (txt) => {
-      return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
-    });
-  };
-
   if (loading) {
     return (
       <div className="loading-container">
@@ -314,7 +366,7 @@ const EventCalendar: React.FC = () => {
         type="error"
         showIcon
         action={
-          <Button
+          <button
             onClick={fetchEvents}
             style={{
               border: "none",
@@ -324,7 +376,7 @@ const EventCalendar: React.FC = () => {
             }}
           >
             Thử lại
-          </Button>
+          </button>
         }
       />
     );
@@ -363,9 +415,7 @@ const EventCalendar: React.FC = () => {
                 <div key={index} className="upcoming-event-item">
                   <div className="event-date">
                     <Text strong>
-                      {toTitleCase(
-                        dayjs(event.date).format("dddd, DD/MM/YYYY")
-                      )}
+                      {dayjs(event.date).format("dddd, DD/MM/YYYY")}
                     </Text>
                   </div>
                   <div className="event-info">
