@@ -37,8 +37,7 @@ body {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   text-align: center;
-  padding: 20px;
-  height: auto;
+  padding: 30px 20px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
@@ -227,7 +226,7 @@ body {
 }
 
 .ant-picker-calendar-date-today .ant-picker-calendar-date-value {
-  color: var(--text-highlight) !important;
+  color: var(--accent-primary) !important;
   font-weight: 800 !important;
   background: rgba(255, 107, 107, 0.1);
   padding: 2px 6px;
